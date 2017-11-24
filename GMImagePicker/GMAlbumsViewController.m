@@ -142,12 +142,15 @@ static NSString *const CollectionCellReuseIdentifier = @"CollectionCell";
   NSMutableArray *allFetchResultArray = [[NSMutableArray alloc] init];
   NSMutableArray *allFetchResultLabel = [[NSMutableArray alloc] init];
   {
-    PHFetchOptions *options = [[PHFetchOptions alloc] init];
-    options.predicate = [NSPredicate predicateWithFormat:@"mediaType in %@", self.picker.mediaTypes];
-    options.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
-    PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsWithOptions:options];
-    [allFetchResultArray addObject:assetsFetchResult];
-    [allFetchResultLabel addObject:NSLocalizedStringFromTableInBundle(@"picker.table.all-photos-label",  @"GMImagePicker", [NSBundle bundleForClass:GMImagePickerController.class], @"All photos")];
+    // Try to fix : http://crashes.to/s/302c7fc1638
+    if (![self.picker.mediaTypes isEqual:[NSNull null]] && self.picker != nil) {
+      PHFetchOptions *options = [[PHFetchOptions alloc] init];
+      options.predicate = [NSPredicate predicateWithFormat:@"mediaType in %@", self.picker.mediaTypes];
+      options.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
+      PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsWithOptions:options];
+      [allFetchResultArray addObject:assetsFetchResult];
+      [allFetchResultLabel addObject:NSLocalizedStringFromTableInBundle(@"picker.table.all-photos-label",  @"GMImagePicker", [NSBundle bundleForClass:GMImagePickerController.class], @"All photos")];
+    }
   }
   
   //User albums:
