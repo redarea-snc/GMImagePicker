@@ -39,6 +39,7 @@
 
 static NSString *const AllPhotosReuseIdentifier = @"AllPhotosCell";
 static NSString *const CollectionCellReuseIdentifier = @"CollectionCell";
+static NSString *const UnnamedCollectionDefaultName = @"Collection";
 
 - (void)viewDidLoad
 {
@@ -161,6 +162,7 @@ static NSString *const CollectionCellReuseIdentifier = @"CollectionCell";
     if ([collection isKindOfClass:[PHAssetCollection class]])
     {
       PHFetchOptions *options = [[PHFetchOptions alloc] init];
+        http://crashes.to/s/302c7fc1638
       options.predicate = [NSPredicate predicateWithFormat:@"mediaType in %@", self.picker.mediaTypes];
       PHAssetCollection *assetCollection = (PHAssetCollection *)collection;
       
@@ -168,7 +170,8 @@ static NSString *const CollectionCellReuseIdentifier = @"CollectionCell";
       
       PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:options];
       [userFetchResultArray addObject:assetsFetchResult];
-      [userFetchResultLabel addObject:collection.localizedTitle];
+      // FIX : http://crashes.to/s/c6bd17ffb23
+      [userFetchResultLabel addObject:collection.localizedTitle != nil ? collection.localizedTitle : UnnamedCollectionDefaultName];
     }
   }
   
