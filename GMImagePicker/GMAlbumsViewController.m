@@ -162,7 +162,7 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
     if ([collection isKindOfClass:[PHAssetCollection class]])
     {
       PHFetchOptions *options = [[PHFetchOptions alloc] init];
-        http://crashes.to/s/302c7fc1638
+      //http://crashes.to/s/302c7fc1638
       options.predicate = [NSPredicate predicateWithFormat:@"mediaType in %@", self.picker.mediaTypes];
       PHAssetCollection *assetCollection = (PHAssetCollection *)collection;
       
