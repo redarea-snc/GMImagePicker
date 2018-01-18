@@ -10,6 +10,7 @@
 #import "GMImagePickerController.h"
 #import "GMAlbumsViewController.h"
 #import "GMGridViewCell.h"
+#import "GMCloudImageDownloadManager.h"
 
 #include <Photos/Photos.h>
 
@@ -54,6 +55,7 @@
 @property (nonatomic, weak) GMImagePickerController *picker;
 @property (strong,nonatomic) PHCachingImageManager *imageManager;
 @property (assign, nonatomic) CGRect previousPreheatRect;
+@property (nonatomic, strong) PHImageRequestOptions *thumbnailRequestOptions;
 
 @end
 
@@ -70,6 +72,11 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 -(id)initWithPicker:(GMImagePickerController *)picker
 {
+  _thumbnailRequestOptions = [PHImageRequestOptions new];
+  [_thumbnailRequestOptions setNetworkAccessAllowed:YES];
+  [_thumbnailRequestOptions setSynchronous:NO];
+  [_thumbnailRequestOptions setDeliveryMode:PHImageRequestOptionsDeliveryModeHighQualityFormat];
+  
   //Custom init. The picker contains custom information to create the FlowLayout
   self.picker = picker;
   
@@ -128,12 +135,23 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
   self.imageManager = [[PHCachingImageManager alloc] init];
   [self resetCachedAssets];
   [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(handleCloudImageDownloadComleteNotification:)
+                                               name:GMCloudImageDownloadCompleteNotification
+                                             object:nil];
   
   if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)])
   {
     self.edgesForExtendedLayout = UIRectEdgeNone;
   }
 }
+
+- (void)handleCloudImageDownloadComleteNotification:(NSNotification *)notification {
+//  dispatch_async(dispatch_get_main_queue(), ^{
+//    [self updateProgressOnVisibleCells];
+//  });
+}
+
 
 - (void)viewWillAppear:(BOOL)animated
 {
@@ -154,6 +172,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 {
   [self resetCachedAssets];
   [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -179,15 +198,16 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
   //This is optional. Reload visible thumbnails:
   for (GMGridViewCell *cell in [self.collectionView visibleCells]) {
     NSInteger currentTag = cell.tag;
+    [cell.imageView setImage:[UIImage imageNamed:@"GMEmptyFolder"]];
     [self.imageManager requestImageForAsset:cell.asset
                                  targetSize:AssetGridThumbnailSize
-                                contentMode:PHImageContentModeAspectFill
-                                    options:nil
+                                contentMode:PHImageContentModeAspectFit
+                                    options:self.thumbnailRequestOptions
                               resultHandler:^(UIImage *result, NSDictionary *info)
      {
        // Only update the thumbnail if the cell tag hasn't changed. Otherwise, the cell has been re-used.
        if (cell.tag == currentTag) {
-         [cell.imageView setImage:result];
+         [cell.imageView setImage:(result ?: [UIImage imageNamed:@"GMEmptyFolder"])];
        }
      }];
   }
@@ -329,15 +349,16 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
    else*/
   {
     //NSLog(@"Image manager: Requesting FILL image for iPhone");
+    [cell.imageView setImage:[UIImage imageNamed:@"GMEmptyFolder"]];
     [self.imageManager requestImageForAsset:asset
                                  targetSize:AssetGridThumbnailSize
-                                contentMode:PHImageContentModeAspectFill
-                                    options:nil
+                                contentMode:PHImageContentModeAspectFit
+                                    options:self.thumbnailRequestOptions
                               resultHandler:^(UIImage *result, NSDictionary *info) {
                                 
                                 // Only update the thumbnail if the cell tag hasn't changed. Otherwise, the cell has been re-used.
                                 if (cell.tag == currentTag) {
-                                  [cell.imageView setImage:result];
+                                  [cell.imageView setImage:(result ?: [UIImage imageNamed:@"GMEmptyFolder"])];
                                 }
                               }];
   }
@@ -361,6 +382,10 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
   } else {
     cell.selected = NO;
   }
+  
+  if (asset.mediaType == PHAssetMediaTypeImage) {
+    [cell toggleProgressIndicatorToVisible:([GMCloudImageDownloadManager shared].mapAssetIDWithPHRequestID[asset.localIdentifier] != nil)];
+  }
   TDTLogInfo(@"GMImagePicker : Returning Grid Cell at index - %@",indexPath);
   return cell;
 }
@@ -376,9 +401,23 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
   
   if (!cell.isEnabled) {
     return NO;
-  } else if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:shouldSelectAsset:)]) {
-    return [self.picker.delegate assetsPickerController:self.picker shouldSelectAsset:asset];
+  }
+  
+  if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:shouldSelectAsset:)] == YES &&
+      [self.picker.delegate assetsPickerController:self.picker shouldSelectAsset:asset] == NO) {
+    return NO;
+  }
+  
+  if (asset.mediaType == PHAssetMediaTypeImage && [[GMCloudImageDownloadManager shared] isFullSizedImageAvailableForAsset:asset] == NO) {
+    if ([GMCloudImageDownloadManager shared].mapAssetIDWithPHRequestID[asset.localIdentifier] != nil) {
+      return NO;
+    } else {
+      [cell toggleProgressIndicatorToVisible:YES];
+      [[GMCloudImageDownloadManager shared] startFullImageDownalodForAsset:asset];
+      return NO;
+    }
   } else {
+    [cell toggleProgressIndicatorToVisible:NO];
     return YES;
   }
 }
@@ -553,12 +592,12 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     
     [self.imageManager startCachingImagesForAssets:assetsToStartCaching
                                         targetSize:AssetGridThumbnailSize
-                                       contentMode:PHImageContentModeAspectFill
-                                           options:nil];
+                                       contentMode:PHImageContentModeAspectFit
+                                           options:self.thumbnailRequestOptions];
     [self.imageManager stopCachingImagesForAssets:assetsToStopCaching
                                        targetSize:AssetGridThumbnailSize
-                                      contentMode:PHImageContentModeAspectFill
-                                          options:nil];
+                                      contentMode:PHImageContentModeAspectFit
+                                          options:self.thumbnailRequestOptions];
     
     self.previousPreheatRect = preheatRect;
   }
@@ -605,5 +644,11 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
   return assets;
 }
 
+- (void)updateProgressOnVisibleCells {
+  NSArray *visibleCells = self.collectionView.visibleCells;
+  for (GMGridViewCell *cell in visibleCells) {
+    [cell toggleProgressIndicatorToVisible:([GMCloudImageDownloadManager shared].mapAssetIDWithPHRequestID[cell.asset.localIdentifier] != nil)];
+  }
+}
 
 @end
