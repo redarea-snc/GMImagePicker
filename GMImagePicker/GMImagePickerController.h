@@ -9,8 +9,6 @@
 #import <UIKit/UIKit.h>
 #import <Photos/Photos.h>
 
-#import <TDTChocolate/FoundationAdditions/TDTLog.h>
-
 
 //This is the default image picker size!
 //static CGSize const kPopoverContentSize = {320, 480};

@@ -124,7 +124,6 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 - (void)viewDidLoad
 {
   [super viewDidLoad];
-  TDTLogInfo(@"GMImagePicker");
   [self setupViews];
   
   // Navigation bar customization
@@ -156,7 +155,6 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 - (void)viewWillAppear:(BOOL)animated
 {
   [super viewWillAppear:animated];
-  TDTLogInfo(@"GMImagePicker");
   [self setupButtons];
   [self setupToolbar];
 }
@@ -164,7 +162,6 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 - (void)viewDidAppear:(BOOL)animated
 {
   [super viewDidAppear:animated];
-  TDTLogInfo(@"GMImagePicker");
   [self updateCachedAssets];
 }
 
@@ -386,7 +383,6 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
   if (asset.mediaType == PHAssetMediaTypeImage) {
     [cell toggleProgressIndicatorToVisible:([GMCloudImageDownloadManager shared].mapAssetIDWithPHRequestID[asset.localIdentifier] != nil)];
   }
-  TDTLogInfo(@"GMImagePicker : Returning Grid Cell at index - %@",indexPath);
   return cell;
 }
 
@@ -491,7 +487,6 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
   NSInteger count = (NSInteger)self.assetsFetchResults.count;
-  TDTLogInfo(@"GMImagePicker : Count Returned :%ld", (long)count);
   return count;
 }
 
@@ -500,7 +495,6 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (void)photoLibraryDidChange:(PHChange *)changeInstance
 {
-  TDTLogInfo(@"GMImagePicker");
   // Call might come on any background queue. Re-dispatch to the main queue to handle it.
   dispatch_async(dispatch_get_main_queue(), ^{
     

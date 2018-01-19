@@ -44,7 +44,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
 - (void)viewDidLoad
 {
   [super viewDidLoad];
-  TDTLogInfo(@"GMImagePicker");
   self.view.backgroundColor = [self.picker pickerBackgroundColor];
   
   // Navigation bar customization
@@ -150,8 +149,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
       options.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
       PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsWithOptions:options];
       [allFetchResultArray addObject:assetsFetchResult];
-      TDTLogInfo(@"GMImagePicker : allFetchResultArray add album(count : %ld)", (long)assetsFetchResult.count);
-      [allFetchResultLabel addObject:NSLocalizedStringFromTableInBundle(@"picker.table.all-photos-label",  @"GMImagePicker", [NSBundle bundleForClass:GMImagePickerController.class], @"All photos")];
     }
   }
   
@@ -171,7 +168,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
       
       PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:options];
       [userFetchResultArray addObject:assetsFetchResult];
-      TDTLogInfo(@"GMImagePicker : userFetchResultArray add album(count : %ld)", (long)assetsFetchResult.count);
       // FIX : http://crashes.to/s/c6bd17ffb23
       [userFetchResultLabel addObject:collection.localizedTitle != nil ? collection.localizedTitle : UnnamedCollectionDefaultName];
     }
@@ -198,7 +194,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
         if(assetsFetchResult.count>0)
         {
           [smartFetchResultArray addObject:assetsFetchResult];
-          TDTLogInfo(@"GMImagePicker : smartFetchResultArray add album(count : %ld)", (long)assetsFetchResult.count);
           [smartFetchResultLabel addObject:collection.localizedTitle];
         }
       }
@@ -207,7 +202,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
   
   self.collectionsFetchResultsAssets= @[allFetchResultArray,smartFetchResultArray,userFetchResultArray];
   self.collectionsFetchResultsTitles= @[allFetchResultLabel,smartFetchResultLabel,userFetchResultLabel];
-  TDTLogInfo(@"GMImagePicker");
 }
 
 
@@ -237,14 +231,12 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
   NSInteger count = self.collectionsFetchResultsAssets.count;
-  TDTLogInfo(@"GMImagePicker : Count Returned :%ld", (long)count);
   return count;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
   PHFetchResult *fetchResult = self.collectionsFetchResultsAssets[(NSUInteger)section];
-  TDTLogInfo(@"GMImagePicker : Count Returned :%ld for section : %ld", (long)fetchResult.count, (long)section);
   return (NSInteger)fetchResult.count;
 }
 
@@ -343,7 +335,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
     cell.imageView2.image = [UIImage imageNamed:@"GMEmptyFolder"];
     cell.imageView1.image = [UIImage imageNamed:@"GMEmptyFolder"];
   }
-  TDTLogInfo(@"GMImagePicker : Cell Titled :%@ indexPath : %@", cell.textLabel.text, indexPath);
   return cell;
 }
 
@@ -359,7 +350,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
   gridViewController.title = cell.textLabel.text;
   // Use the prefetched assets!
   gridViewController.assetsFetchResults = [[_collectionsFetchResultsAssets objectAtIndex:(NSUInteger)indexPath.section] objectAtIndex:(NSUInteger)indexPath.row];
-  TDTLogInfo(@"GMImagePicker : Title : %@ assetsFetchResults : %@", cell.textLabel.text, gridViewController.assetsFetchResults);
   // Remove selection so it looks better on slide in
   [tableView deselectRowAtIndexPath:indexPath animated:true];
   
@@ -398,7 +388,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
 
 - (void)photoLibraryDidChange:(PHChange *)changeInstance
 {
-  TDTLogInfo(@"GMImagePicker");
   // Call might come on any background queue. Re-dispatch to the main queue to handle it.
   dispatch_async(dispatch_get_main_queue(), ^{
     
