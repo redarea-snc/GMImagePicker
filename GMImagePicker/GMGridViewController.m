@@ -146,9 +146,9 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 }
 
 - (void)handleCloudImageDownloadComleteNotification:(NSNotification *)notification {
-//  dispatch_async(dispatch_get_main_queue(), ^{
-//    [self updateProgressOnVisibleCells];
-//  });
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self updateProgressOnVisibleCells];
+  });
 }
 
 
