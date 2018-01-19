@@ -34,6 +34,10 @@ static UIColor *disabledColor;
   disabledColor   = [UIColor colorWithWhite:1 alpha:0.9];
 }
 
+- (void)toggleProgressIndicatorToVisible:(BOOL)visible {
+  visible ? [self.progressView startAnimating] : [self.progressView stopAnimating];
+}
+
 - (void)awakeFromNib
 {
   [super awakeFromNib];
@@ -65,7 +69,7 @@ static UIColor *disabledColor;
     _imageView.clipsToBounds = YES;
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
     _imageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    [self addSubview:_imageView];
+    [self.contentView addSubview:_imageView];
     
     
     // The video gradient, label & icon
@@ -121,6 +125,14 @@ static UIColor *disabledColor;
     _selectedButton.hidden = NO;
     _selectedButton.userInteractionEnabled = NO;
     [self addSubview:_selectedButton];
+    
+    _progressView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    [_progressView setFrame:self.bounds];
+    [_progressView setBackgroundColor:[UIColor colorWithWhite:0.3 alpha:0.5]];
+    _progressView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    _progressView.hidden = YES;
+    [_progressView setHidesWhenStopped:YES];
+    [self.contentView addSubview:_progressView];
   }
   
   // Note: the views above are created in case this is toggled per cell, on the fly, etc.!
@@ -133,6 +145,11 @@ static UIColor *disabledColor;
 - (void)layoutSubviews {
   [super layoutSubviews];
   _gradient.frame = _gradientView.bounds;
+}
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  [_progressView stopAnimating];
 }
 
 - (void)bind:(PHAsset *)asset

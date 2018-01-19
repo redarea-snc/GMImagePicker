@@ -44,7 +44,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
 - (void)viewDidLoad
 {
   [super viewDidLoad];
-  
   self.view.backgroundColor = [self.picker pickerBackgroundColor];
   
   // Navigation bar customization
@@ -150,7 +149,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
       options.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
       PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsWithOptions:options];
       [allFetchResultArray addObject:assetsFetchResult];
-      [allFetchResultLabel addObject:NSLocalizedStringFromTableInBundle(@"picker.table.all-photos-label",  @"GMImagePicker", [NSBundle bundleForClass:GMImagePickerController.class], @"All photos")];
     }
   }
   
@@ -232,7 +230,8 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-  return (NSInteger)self.collectionsFetchResultsAssets.count;
+  NSInteger count = self.collectionsFetchResultsAssets.count;
+  return count;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -278,13 +277,19 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
     CGSize tableCellThumbnailSize1 = CGSizeMake(kAlbumThumbnailSize1.width*scale, kAlbumThumbnailSize1.height*scale);
     PHAsset *asset = assetsFetchResult[0];
     [cell setVideoLayout:(asset.mediaType==PHAssetMediaTypeVideo)];
+    PHImageRequestOptions *options = [PHImageRequestOptions new];
+    [options setNetworkAccessAllowed:YES];
+    [options setSynchronous:NO];
+    [options setDeliveryMode:PHImageRequestOptionsDeliveryModeHighQualityFormat];
+    
+    cell.imageView1.image = [UIImage imageNamed:@"GMEmptyFolder"];
     [self.imageManager requestImageForAsset:asset
                                  targetSize:tableCellThumbnailSize1
                                 contentMode:PHImageContentModeAspectFill
-                                    options:nil
+                                    options:options
                               resultHandler:^(UIImage *result, NSDictionary *info) {
                                 if (cell.tag == currentTag) {
-                                  cell.imageView1.image = result;
+                                  cell.imageView1.image = result ?: [UIImage imageNamed:@"GMEmptyFolder"];
                                 }
                               }];
     
@@ -294,13 +299,14 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
       //Compute the thumbnail pixel size:
       CGSize tableCellThumbnailSize2 = CGSizeMake(kAlbumThumbnailSize2.width*scale, kAlbumThumbnailSize2.height*scale);
       PHAsset *asset = assetsFetchResult[1];
+      cell.imageView2.image = [UIImage imageNamed:@"GMEmptyFolder"];
       [self.imageManager requestImageForAsset:asset
                                    targetSize:tableCellThumbnailSize2
                                   contentMode:PHImageContentModeAspectFill
-                                      options:nil
+                                      options:options
                                 resultHandler:^(UIImage *result, NSDictionary *info) {
                                   if (cell.tag == currentTag) {
-                                    cell.imageView2.image = result;
+                                    cell.imageView2.image = result ?: [UIImage imageNamed:@"GMEmptyFolder"];;
                                   }
                                 }];
     } else {
@@ -310,13 +316,14 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
     if ([assetsFetchResult count] > 2) {
       CGSize tableCellThumbnailSize3 = CGSizeMake(kAlbumThumbnailSize3.width*scale, kAlbumThumbnailSize3.height*scale);
       PHAsset *asset = assetsFetchResult[2];
+      cell.imageView3.image = [UIImage imageNamed:@"GMEmptyFolder"];
       [self.imageManager requestImageForAsset:asset
                                    targetSize:tableCellThumbnailSize3
                                   contentMode:PHImageContentModeAspectFill
-                                      options:nil
+                                      options:options
                                 resultHandler:^(UIImage *result, NSDictionary *info) {
                                   if (cell.tag == currentTag) {
-                                    cell.imageView3.image = result;
+                                    cell.imageView3.image = result ?: [UIImage imageNamed:@"GMEmptyFolder"];
                                   }
                                 }];
     } else {
@@ -328,7 +335,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
     cell.imageView2.image = [UIImage imageNamed:@"GMEmptyFolder"];
     cell.imageView1.image = [UIImage imageNamed:@"GMEmptyFolder"];
   }
-  
   return cell;
 }
 
@@ -344,7 +350,6 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
   gridViewController.title = cell.textLabel.text;
   // Use the prefetched assets!
   gridViewController.assetsFetchResults = [[_collectionsFetchResultsAssets objectAtIndex:(NSUInteger)indexPath.section] objectAtIndex:(NSUInteger)indexPath.row];
-  
   // Remove selection so it looks better on slide in
   [tableView deselectRowAtIndexPath:indexPath animated:true];
   
