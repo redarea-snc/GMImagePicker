@@ -127,6 +127,9 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
 
 -(void)updateFetchResults
 {
+  if (self.picker.mediaTypes == nil || self.picker.mediaTypes.count < 1) {
+    return;
+  }
   //What I do here is fetch both the albums list and the assets of each album.
   //This way I have acces to the number of items in each album, I can load the 3
   //thumbnails directly and I can pass the fetched result to the gridViewController.
@@ -141,18 +144,13 @@ static NSString *const UnnamedCollectionDefaultName = @"Collection";
   //All album: Sorted by descending creation date.
   NSMutableArray *allFetchResultArray = [[NSMutableArray alloc] init];
   NSMutableArray *allFetchResultLabel = [[NSMutableArray alloc] init];
-  {
-    // Try to fix : http://crashes.to/s/302c7fc1638
-    if (![self.picker.mediaTypes isEqual:[NSNull null]] && self.picker != nil) {
-      PHFetchOptions *options = [[PHFetchOptions alloc] init];
-      options.predicate = [NSPredicate predicateWithFormat:@"mediaType in %@", self.picker.mediaTypes];
-      options.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
-      PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsWithOptions:options];
-      [allFetchResultArray addObject:assetsFetchResult];
-      [allFetchResultLabel addObject:NSLocalizedStringFromTableInBundle(@"picker.table.all-photos-label",  @"GMImagePicker", [NSBundle bundleForClass:GMImagePickerController.class], @"All photos")];
-
-    }
-  }
+  
+  PHFetchOptions *options = [[PHFetchOptions alloc] init];
+  options.predicate = [NSPredicate predicateWithFormat:@"mediaType in %@", self.picker.mediaTypes];
+  options.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
+  PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsWithOptions:options];
+  [allFetchResultArray addObject:assetsFetchResult];
+  [allFetchResultLabel addObject:NSLocalizedStringFromTableInBundle(@"picker.table.all-photos-label",  @"GMImagePicker", [NSBundle bundleForClass:GMImagePickerController.class], @"All photos")];
   
   //User albums:
   NSMutableArray *userFetchResultArray = [[NSMutableArray alloc] init];
