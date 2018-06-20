@@ -503,6 +503,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
   dispatch_async(dispatch_get_main_queue(), ^{
     PHFetchResultChangeDetails *collectionChanges = [changeInstance changeDetailsForFetchResult:self.assetsFetchResults];
     if (collectionChanges) {
+      self.assetsFetchResults = [collectionChanges fetchResultAfterChanges];
       [self.collectionView reloadData];
       [self resetCachedAssets];
     }
