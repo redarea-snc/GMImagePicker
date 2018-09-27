@@ -1,0 +1,19 @@
+PODS:
+  - GMImagePicker (1.0.0):
+    - TDTChocolate/FoundationAdditions
+  - TDTChocolate/FoundationAdditions (2.13.0)
+
+DEPENDENCIES:
+  - GMImagePicker (from `../`)
+
+EXTERNAL SOURCES:
+  GMImagePicker:
+    :path: ../
+
+SPEC CHECKSUMS:
+  GMImagePicker: 91ca92eafbb2c3527fad7dac34a3d307a94445c9
+  TDTChocolate: 85abf00b779241ea291296236976ba35ce77d37e
+
+PODFILE CHECKSUM: c28b74831efd3fa11de5662270635822d192780c
+
+COCOAPODS: 1.2.0

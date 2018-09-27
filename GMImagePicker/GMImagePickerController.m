@@ -9,7 +9,7 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "GMImagePickerController.h"
 #import "GMAlbumsViewController.h"
-@import Photos;
+#import <Photos/Photos.h>
 
 @interface GMImagePickerController () <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIAlertViewDelegate>
 
@@ -86,7 +86,6 @@
     _navigationController.toolbar.translucent = YES;
     _navigationController.toolbar.barTintColor = _toolbarBarTintColor;
     _navigationController.toolbar.tintColor = _toolbarTintColor;
-    [(UIView*)[_navigationController.toolbar.subviews objectAtIndex:0] setAlpha:0.75f];  // URGH - I know!
     
     _navigationController.navigationBar.backgroundColor = _navigationBarBackgroundColor;
     _navigationController.navigationBar.tintColor = _navigationBarTintColor;
@@ -114,16 +113,22 @@
     GMAlbumsViewController *albumsViewController = [[GMAlbumsViewController alloc] init];
     _navigationController = [[UINavigationController alloc] initWithRootViewController:albumsViewController];
     _navigationController.delegate = self;
-    
-    _navigationController.navigationBar.translucent = YES;
-    [_navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
-    _navigationController.navigationBar.shadowImage = [UIImage new];
-    
+    [_navigationController.navigationBar setTranslucent:NO];
     [_navigationController willMoveToParentViewController:self];
     [_navigationController.view setFrame:self.view.frame];
     [self.view addSubview:_navigationController.view];
+    [self addConstraintsToChildViewControllersView:_navigationController.view];
     [self addChildViewController:_navigationController];
     [_navigationController didMoveToParentViewController:self];
+}
+
+- (void)addConstraintsToChildViewControllersView:(UIView *)view {
+    view.translatesAutoresizingMaskIntoConstraints = NO;
+    NSArray * hConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[view]-0-|" options:0 metrics:0 views:NSDictionaryOfVariableBindings(view)];
+    NSLayoutConstraint * topConstraint = [NSLayoutConstraint constraintWithItem:view attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.topLayoutGuide attribute:NSLayoutAttributeBottom multiplier:1 constant:0];
+    NSLayoutConstraint * bottomConstraint = [NSLayoutConstraint constraintWithItem:view attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:view.superview attribute:NSLayoutAttributeBottom multiplier:1 constant:0];
+    [view.superview addConstraints:@[topConstraint,bottomConstraint]];
+    [view.superview addConstraints:hConstraints];
 }
 
 

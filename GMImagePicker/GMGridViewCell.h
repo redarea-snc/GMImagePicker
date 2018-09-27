@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Guillermo Muntaner Perelló. All rights reserved.
 //
 
-@import UIKit;
-@import Photos;
+#include <UIKit/UIKit.h>
+#include <Photos/Photos.h>
 
 
 @interface GMGridViewCell : UICollectionViewCell
@@ -24,9 +24,12 @@
 @property (nonatomic) BOOL shouldShowSelection;
 @property (nonatomic, strong) UIView *coverView;
 @property (nonatomic, strong) UIButton *selectedButton;
+@property (nonatomic, strong) UIActivityIndicatorView * progressView;
 
 @property (nonatomic, assign, getter = isEnabled) BOOL enabled;
 
+
+- (void)toggleProgressIndicatorToVisible:(BOOL)visible;
 - (void)bind:(PHAsset *)asset;
 
 @end
