@@ -567,10 +567,15 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 {
     if (indexPaths.count == 0) { return nil; }
 
-    NSMutableArray *assets = [NSMutableArray arrayWithCapacity:indexPaths.count];
+    //--Rut Bastoni - 12/11/2018 - Fixes NSRangeException : index (0) beyond bounds (0)
+    //NSMutableArray *assets = [NSMutableArray arrayWithCapacity:indexPaths.count];
+    NSMutableArray *assets = [[NSMutableArray alloc] init];
     for (NSIndexPath *indexPath in indexPaths) {
-        PHAsset *asset = self.assetsFetchResults[indexPath.item];
-        [assets addObject:asset];
+        NSInteger itemIndex = indexPath.item;
+        if(itemIndex < self.assetsFetchResults.count){
+            PHAsset *asset = self.assetsFetchResults[indexPath.item];
+            [assets addObject:asset];
+        }
     }
     return assets;
 }
